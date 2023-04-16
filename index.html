@@ -3,6 +3,35 @@
     <html lang="en">
       <head>
         <meta charset="UTF-16">
+	<script src="1.js"></script>
+	<script src="jquery-1.8.3.min.js"></script>
+	<style type="text/css">
+		input{
+			background-color: #9fc5f1;
+			width: 100px; 
+			height: 30px; 
+			line-height: 30px; 
+			text-align: center; 
+			color: #fff; 
+			font-size:14px; 
+			font-weight: bold;
+		}
+		#time p{
+			color: #1f6dc2;
+			font-size: 48px; 
+			font-weight: bold;
+			margin-left:90px;
+			margin-bottom:0px;
+		}
+	</style>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<body>
+<div id="time">
+	<p>00:00</p>
+	<input type="button" value="开始" onclick="start()"/>
+	<input type="button" value="暂停" onclick="pause()"/>
+	<input type="button" value="继续" onclick="goOn()"/>
+</div>
           <title>KYRIEGBW</title>
           <style type="text/css"></style>
     <head>
