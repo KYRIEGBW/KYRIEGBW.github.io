@@ -1,82 +1,368 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <title>KYRIEGBW</title>
-    <style type="text/css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>赵小雷的工作台</title>
+<style>
+  :root{
+    --bg:#f5f6fa;
+    --card:#ffffff;
+    --text:#2b2f36;
+    --muted:#8a9099;
+    --accent:#4f7cff;
+    --accent-soft:#eef3ff;
+    --shadow:0 10px 30px rgba(35,45,80,.08);
+    --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, #e6ecff 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #ffeef2 0%, transparent 55%),
+      var(--bg);
+    min-height:100vh;color:var(--text);
+    display:flex;flex-direction:column;align-items:center;
+  }
 
-		body {
-			background-image: url("11.jpg");
-			background-size: cover;
-		}
-		.container {
-			text-align: center;
-			margin-top: 100px;
-		}
-		.link {
-			display: inline-block;
-			margin: 20px;
-			font-size: 24px;
-			color: white;
-			text-decoration: none;
-		}
-    
-    .标题 {
-        font-family: "Mistral";
-        font-size: 250px;
-        color:#F9B400;
-    }
-    .内容 {
-        font-family: "Forte";
-        font-size: 120px;
-        color: #F9B400;
-        text-decoration: none;
-    }
-    </style>
+  /* ===== 顶部 ===== */
+  header{
+    width:100%;max-width:1080px;
+    padding:42px 24px 18px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .hello h1{font-size:26px;font-weight:700;letter-spacing:.5px}
+  .hello p{color:var(--muted);font-size:13px;margin-top:6px}
+  .clock{text-align:right}
+  .clock .time{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+  .clock .date{color:var(--muted);font-size:13px;margin-top:2px}
 
-    </head>
+  /* ===== 视图容器 ===== */
+  .stage{width:100%;max-width:1080px;padding:20px 24px 60px;position:relative;flex:1}
+  .view{transition:opacity .35s ease, transform .35s ease}
+  .view.leaving{opacity:0;transform:translateY(14px) scale(.98);pointer-events:none}
+  .view.entering{opacity:0;transform:translateY(-10px) scale(.99)}
 
-    <body>
-      
- <table width="100%" height="850">
+  /* ===== 面包屑 ===== */
+  .crumb{
+    display:flex;align-items:center;gap:10px;margin:6px 0 18px;
+    opacity:0;animation:fadeDown .4s .05s forwards;
+  }
+  .back{
+    border:none;cursor:pointer;background:var(--card);color:var(--text);
+    width:38px;height:38px;border-radius:12px;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+    transition:transform .2s, background .2s;
+  }
+  .back:hover{transform:translateX(-3px);background:var(--accent-soft)}
+  .crumb .path{font-size:15px;font-weight:600}
+  .crumb .count{font-size:12px;color:var(--muted);background:var(--card);
+    padding:4px 12px;border-radius:99px;box-shadow:var(--shadow)}
 
-   <tbody><tr>
+  /* ===== 网格 ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
 
-     <td colspan="10" class="标题" height="50%"><div align="center">KYRIEGBW</td>
+  .folder,.link{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:20px;cursor:pointer;position:relative;overflow:hidden;
+    transition:transform .25s cubic-bezier(.2,.8,.3,1.2), box-shadow .25s;
+    animation:pop .45s backwards;
+  }
+  .folder:hover,.link:hover{transform:translateY(-5px);box-shadow:0 16px 36px rgba(35,45,80,.14)}
 
-   </tr>
-   <tr>
-     <td height="25%" width="25%"><div align="left" class="11"><a href="https://docs.qq.com/desktop/?u=2128abc05a43443b8bbd15c85e4baa6d" class="内容">Tencent</a></div></td>
+  /* ===== 文件夹展开 ===== */
+  .folder.open{transform:translateY(-2px);box-shadow:0 18px 40px rgba(35,45,80,.16)}
+  .folder .head{display:flex;align-items:center;gap:14px}
+  .folder .head .icon{width:48px;height:48px;border-radius:14px;font-size:22px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0}
+  .folder .head h3{font-size:16px;font-weight:600}
+  .folder .chev{
+    margin-left:auto;font-size:13px;color:var(--muted);
+    transition:transform .35s cubic-bezier(.2,.8,.3,1.2);flex-shrink:0;
+  }
+  .folder.open .chev{transform:rotate(180deg);color:var(--accent)}
+  .folder .body{
+    max-height:0;overflow:hidden;
+    transition:max-height .45s cubic-bezier(.3,.7,.3,1);
+  }
+  .folder .inner{padding-top:16px}
+  .folder .divider{height:1px;background:linear-gradient(90deg,transparent,#e6e9f2,transparent);margin-bottom:6px}
+  .sub{
+    display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);
+    padding:9px 10px;border-radius:12px;
+    opacity:0;transform:translateX(-10px);
+    transition:background .2s, color .2s, opacity .35s ease, transform .35s ease;
+  }
+  .folder.open .sub{opacity:1;transform:none;animation:fadeSlide .35s backwards}
+  @keyframes fadeSlide{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+  .sub:hover{background:var(--accent-soft)}
+  .sub .dot{
+    width:30px;height:30px;border-radius:9px;color:#fff;font-weight:700;font-size:13px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .sub .name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sub .go{margin-left:auto;font-size:12px;color:var(--muted);opacity:0;transform:translateX(-4px);transition:all .2s}
+  .sub:hover .go{opacity:1;transform:none;color:var(--accent)}
 
-     <td height="25%" width="25%"><div align="center" class="11"><a href="https://y.qq.com/?ADTAG=myqq#type=index" class="内容">Music</a></div></td>
+  @keyframes pop{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
-     <td height="25%" width="25%"><div align="center" class="11"><a href="https://www.baidu.com/" class="内容">Baidu</a></div></td>
+  /* ===== 便签 ===== */
+  .note-wrap{width:100%;max-width:1080px;padding:10px 24px 0}
+  .note{
+    background:linear-gradient(180deg,#fff9d6,#fff3b8);
+    border-radius:var(--radius);
+    box-shadow:0 10px 30px rgba(120,100,20,.12), inset 0 -14px 24px -18px rgba(160,130,30,.35);
+    padding:22px 24px 16px;position:relative;
+    transition:transform .25s, box-shadow .25s;
+  }
+  .note:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(120,100,20,.16)}
+  .note::before{ /* 顶部胶带装饰 */
+    content:"";position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(-2deg);
+    width:90px;height:22px;background:rgba(255,255,255,.55);
+    border-left:1px dashed rgba(0,0,0,.08);border-right:1px dashed rgba(0,0,0,.08);
+    border-radius:3px;
+  }
+  .note-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .note-head .pin{font-size:17px}
+  .note-head h3{font-size:15px;font-weight:700;color:#8a6d1a}
+  .note-head .tip{font-size:11.5px;color:#b09540;margin-left:auto}
+  .note-head .clear{
+    border:none;cursor:pointer;background:rgba(255,255,255,.6);color:#8a6d1a;
+    font-size:12px;padding:4px 12px;border-radius:99px;transition:background .2s;
+  }
+  .note-head .clear:hover{background:rgba(255,255,255,.95)}
+  .note-edit{
+    min-height:110px;max-height:320px;overflow-y:auto;
+    font-size:14px;line-height:1.7;color:#5c4a12;
+    outline:none;caret-color:#c9a227;word-break:break-word;
+  }
+  .note-edit:empty::before{content:"在这里随手记点文字，直接 Ctrl+V 粘贴图片也行 ✎";color:#c2ab63}
+  .note-edit img{max-width:100%;max-height:220px;border-radius:10px;margin:6px 4px;
+    box-shadow:0 4px 12px rgba(120,100,20,.2);display:inline-block;vertical-align:top}
+  .note-edit:focus{background:rgba(255,255,255,.25);border-radius:10px}
 
-     <td height="25%" width="25%"><div align="right" class="11"><a href="https://otp.landian.vip/zh-cn/" class="内容">Office</a></div></td>
+  footer{color:var(--muted);font-size:12px;padding:0 0 28px}
 
-   </tr> 
-   <tr> 
+  @media (max-width:560px){
+    .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+    header{padding-top:28px}
+    .hello h1{font-size:21px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hello">
+    <h1>赵小雷的工作台</h1>
+    <p id="greet">你好，今天也要加油呀 ✦</p>
+  </div>
+  <div class="clock">
+    <div class="time" id="time">--:--</div>
+    <div class="date" id="date">--</div>
+  </div>
+</header>
+
+<div class="note-wrap">
+  <div class="note">
+    <div class="note-head">
+      <span class="pin">📌</span>
+      <h3>随手记</h3>
+      <span class="tip">临时便签 · 刷新页面后清空</span>
+      <button class="clear" id="noteClear">清空</button>
+    </div>
+    <div class="note-edit" id="noteEdit" contenteditable="true"></div>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="view" id="view"></div>
+</div>
+
+<script>
+/* ================= 数据（来自浏览器书签导出） ================= */
+const DATA = [
+  { name:"会计", emoji:"🧾", color:"#4f7cff", links:[
+    {t:"计算机二级",u:"https://ncre.neea.edu.cn/html1/report/2306/333-1.htm"},
+    {t:"之了课堂",u:"https://www.zlketang.com/"},    {t:"初级会计",u:"http://kzp.mof.gov.cn/"},
+    {t:"2026初级会计资料",u:"https://www.kdocs.cn/l/cv2u8ULMPXuF"},
+    {t:"实务",u:"https://pan.quark.cn/s/7cbe9ed2637e#/share/docpdf/23fe59bad7294a4b9f158162e5691537"},
+    {t:"经济法",u:"https://pan.quark.cn/s/7cbe9ed2637e#/share/docpdf/8eda322c4ba64fab9120cba80f7c9434"},
+  ]},
+  { name:"大学学习", emoji:"🎓", color:"#7c5cff", links:[
+    {t:"智慧树网",u:"https://www.zhihuishu.com/"},
+    {t:"智慧职教",u:"https://zjy2.icve.com.cn/study/index"},
+    {t:"选课网址",u:"https://cas.whcp.edu.cn/lyuapServer/login?service=https%3A%2F%2Fjw.whcp.edu.cn%3A9090%2Fapi%2Fcas%2Flogin%3Fpattern%3Dteacher-login%26returnUrl%3Dhttps%253A%252F%252Fjw.whcp.edu.cn%252F%2523%252Fjwxt%252Fjs%252Fstudent%252FchildServiceQuery%252Fchoose"},
+  ]},
+  { name:"工具", emoji:"🧰", color:"#f4a63b", links:[
+    {t:"豆包",u:"http://dy.pbgia.com/bmdb"},
+    {t:"腾讯文档",u:"https://docs.qq.com/desktop/"},
+    {t:"腾讯微云",u:"https://www.weiyun.com/disk"},
+    {t:"百度翻译",u:"https://fanyi.baidu.com/mtpe-individual/multimodal?channel=pinzhuan#/"},
+    {t:"文心一言",u:"https://yiyan.baidu.com/"},
+    {t:"DeepSeek",u:"https://chat.deepseek.com/"},
+    {t:"MiniMax",u:"https://www.minimaxi.com/audio/text-to-speech"},
+    {t:"文件转换",u:"https://convertio.co/zh/"},
+    {t:"资源下载",u:"https://guiy.top/"},
   
-    <td height="25%" width="25%"><div align="left" class="11"><a href="11.xlsx" download class="内容">KYRIE</a></div></td>
+  ]},
+  { name:"影视", emoji:"🎬", color:"#ff5c7a", links:[
+    {t:"抖音",u:"http://dy.pbgia.com/bmdy"},
+    {t:"腾讯视频",u:"https://v.qq.com/"},
+    {t:"爱奇艺",u:"https://www.iqiyi.com/"},
+    {t:"西瓜视频",u:"https://www.ixigua.com/"},
+    {t:"哔哩哔哩",u:"https://www.bilibili.com/"},
+    {t:"视频解析",u:"http://www.12vv.cn/#jk"},
+    {t:"优酷",u:"https://www.youku.com/"},
+    {t:"喜马拉雅",u:"https://www.ximalaya.com/"},
+    {t:"芒果TV",u:"https://www.mgtv.com/movie/"},
+  ]},
+  { name:"素材", emoji:"🎨", color:"#e056a7", links:[
+    {t:"插图 Slidesgo",u:"https://slidesgo.net/"},
+    {t:"设计 UXMAP",u:"https://www.uxmap.cn/page/#/uxmap/category"},
+    {t:"PPT模板",u:"https://www.2ppt.com/"},
+    {t:"优品 PPT",u:"https://www.ypppt.com/"},
+    {t:"第一 PPT",u:"https://www.1ppt.com/"},
+    {t:"Canva 可画",u:"https://www.canva.cn/"},
+    {t:"SlidesCarnival",u:"https://www.slidescarnival.com/"},
+    {t:"Slidesgo",u:"https://slidesgo.com/"},
+  ]},
+  { name:"配色", emoji:"🌈", color:"#8e6cff", links:[
+    {t:"取色器",u:"https://c.runoob.com/front-end/6214/#0016ff"},
+    {t:"色卡",u:"https://c.runoob.com/more/colorpad/tradcnc.html"},
+  ]},
+  { name:"插件", emoji:"🧩", color:"#3ba7f4", links:[
+    {t:"插件市场",u:"https://marketplace.visualstudio.com/search?term=theme&target=VS&category=All%20categories&vsVersion=vs2022&sortBy=Relevance"},
+  ]},
+  { name:"博客", emoji:"✍️", color:"#6a7bff", links:[
+    {t:"CSDN",u:"https://blog.csdn.net/"},
+    {t:"微博",u:"https://s.weibo.com/weibo?q=%E8%B5%B5%E9%9B%B7%E7%94%B5%E8%84%91%E5%A3%81%E7%BA%B8&page=5"},
+    {t:"GitHub",u:"https://github.com/"},
+  ]},
+];
 
-    <td height="25%" width="25%"><div align="center" class="11"><a href="https://edu.netinnet.cn/student/index.html#/home" class="内容">Yuns</a></div></td>
+/* ================= 工具函数 ================= */
+const view = document.getElementById('view');
 
-    <td height="25%" width="25%"><div align="center" class="11"><a href="https://chat.extkj.cn/" class="内容">wenAI</a></div></td>
-    
-    <td height="25%" width="25%"><div align="right"><a href="https://f.kdocs.cn/ksform/w/write/L70hb6Rw#routePromt" class="内容">TIME</a></div></td>
+function hostOf(u){
+  try{ return new URL(u).hostname; }catch(e){ return u.replace(/^https?:\/\//,'').split('/')[0]; }
+}
+function initial(t){ return t.trim().charAt(0).toUpperCase() || "•"; }
 
-    </tr>
+/* ================= 渲染：文件夹手风琴 ================= */
+function renderHome(){
+  const html = `<div class="grid">` + DATA.map((f,i)=>{
+    return `
+    <div class="folder" style="animation-delay:${i*45}ms" data-folder="${i}">
+      <div class="head">
+        <div class="icon" style="background:${f.color}1a">${f.emoji}</div>
+        <h3>${f.name}</h3>
+        <span style="font-size:12px;color:var(--muted)">${f.links.length}</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="body">
+        <div class="inner">
+          <div class="divider"></div>
+          ${f.links.map(l=>`
+            <a class="sub" href="${l.u}" target="_blank" rel="noopener" style="animation-delay:${i*30}ms">
+              <span class="dot" style="background:${f.color}">${initial(l.t)}</span>
+              <span class="name">${l.t}</span>
+              <span class="go">打开 ↗</span>
+            </a>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+  view.innerHTML = html;
 
-   <tr>
-     <td height="25%" width="25%"><div align="left" class="11"><a href="http://172.16.20.160:5000/fstjkptgl/" class="内容">FSTN</a></div></td>
+  view.querySelectorAll('[data-folder]').forEach(el=>{
+    const body = el.querySelector('.body');
+    // 整个文件夹卡片任意位置点击都可展开/收起；点击里面的网址链接则直接打开，不触发展开
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('a.sub')) return;
+      const isOpen = el.classList.contains('open');
+      // 手风琴：先收起其他已展开的文件夹
+      view.querySelectorAll('.folder.open').forEach(o=>{
+        if(o !== el){ o.classList.remove('open'); o.querySelector('.body').style.maxHeight = '0px'; }
+      });
+      if(isOpen){
+        el.classList.remove('open');
+        body.style.maxHeight = '0px';
+      }else{
+        el.classList.add('open');
+        body.style.maxHeight = body.scrollHeight + 'px';
+      }
+    });
+  });
+}
 
-     <td height="25%" width="25%"><div align="center" class="11"><a href="http://172.16.20.160:5000/fstjkptgl/admin.aspx" class="内容">Teacher</a></div></td>
+/* ================= 视图切换动画 ================= */
+function swap(html){
+  view.classList.add('leaving');
+  setTimeout(()=>{
+    view.innerHTML = html;
+    view.classList.remove('leaving');
+    view.classList.add('entering');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>view.classList.remove('entering')));
+  }, 300);
+}
 
-     <td height="25%" width="25%"><div align="center" class="11"><a href="http://162.14.120.44:5598/fstjkptgl/" class="内容">FSTW</a></div></td>
-     
-     <td height="25%" width="25%"><div align="right"><a href="http://162.14.120.44:5598/fstjkptgl/admin.aspx" class="内容">Teacher</a></div></td>
+/* ================= 时钟 & 问候 ================= */
+function tick(){
+  const n = new Date();
+  const p = v=>String(v).padStart(2,'0');
+  document.getElementById('time').textContent = p(n.getHours())+":"+p(n.getMinutes());
+  const wd = ["日","一","二","三","四","五","六"][n.getDay()];
+  document.getElementById('date').textContent = `${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${wd}`;
+  const h = n.getHours();
+  document.getElementById('greet').textContent =
+    h<6?"夜深了，注意休息 🌙":h<12?"早上好，新的一天元气满满 ☀️":
+    h<14?"中午好，记得吃午饭 🍚":h<18?"下午好，继续加油 💪":"晚上好，辛苦啦 🌆";
+}
+tick(); setInterval(tick, 20000);
 
-   </tr>
+/* ================= 便签 ================= */
+const noteEdit = document.getElementById('noteEdit');
+// 支持直接粘贴图片（截图/复制图片后 Ctrl+V）
+noteEdit.addEventListener('paste', (e)=>{
+  const items = e.clipboardData && e.clipboardData.items;
+  if(!items) return;
+  let hasImage = false;
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      hasImage = true;
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        document.execCommand('insertHTML', false,
+          `<img src="${reader.result}" alt="便签图片">`);
+      };
+      reader.readAsDataURL(blob);
+    }
+  }
+  if(hasImage) e.preventDefault(); // 阻止默认粘贴，只插入图片
+});
+// 拖拽图片进便签也能插入
+noteEdit.addEventListener('dragover', e=>{ e.preventDefault(); });
+noteEdit.addEventListener('drop', e=>{
+  const file = [...(e.dataTransfer.files||[])].find(f=>f.type.startsWith('image/'));
+  if(!file) return;
+  e.preventDefault();
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    document.execCommand('insertHTML', false,
+      `<img src="${reader.result}" alt="便签图片">`);
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('noteClear').addEventListener('click', ()=>{
+  noteEdit.innerHTML = '';
+  noteEdit.focus();
+});
 
- </tbody></table>
- 
- </body>
+renderHome();
+</script>
+</body>
+</html>
