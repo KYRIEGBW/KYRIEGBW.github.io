@@ -63,7 +63,7 @@
   .shell{
     position:relative;z-index:1;
     width:min(1340px,100%);margin:0 auto;
-    display:grid;grid-template-columns:clamp(238px,20.5vw,320px) minmax(0,1fr);
+    display:grid;grid-template-columns:clamp(240px,21.5vw,344px) minmax(0,1fr);
     column-gap:clamp(18px,2.2vw,30px);row-gap:clamp(14px,1.9vh,22px);
     align-items:start;
   }
@@ -74,6 +74,7 @@
   @media (max-width:1060px){
     .shell{grid-template-columns:1fr;row-gap:20px}
     .phone-col{position:static;justify-self:center;width:clamp(240px,62vw,330px)}
+    .phone-wrap{width:min(100%,46vh) !important;margin-inline:auto}
   }
 
   /* ===== 顶部信息条 ===== */
@@ -92,6 +93,17 @@
   .hero-l h1{font-size:clamp(19px,1.75vw,25px);font-weight:700;letter-spacing:.6px}
   .hero-l p{color:var(--muted);font-size:clamp(12px,.95vw,13.5px);margin-top:5px}
   .hero-r{text-align:right}
+  /* ===== 顶部「空气」小组件：会飘、会被戳破的泡泡 ===== */
+  .air-widget{
+    position:relative;flex:1 1 150px;min-width:0;
+    height:clamp(42px,5vh,56px);border-radius:999px;overflow:hidden;
+    cursor:crosshair;-webkit-user-select:none;user-select:none;
+    background:linear-gradient(120deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+    border:1px solid rgba(255,255,255,.11);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.15), inset 0 -10px 20px rgba(3,7,28,.30);
+  }
+  .air-widget canvas{display:block;width:100%;height:100%}
+  @media (max-width:880px){.air-widget{display:none}}
   .hero-r .time{font-size:clamp(24px,2.1vw,32px);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px}
   .hero-r .date{color:var(--muted);font-size:clamp(11.5px,.92vw,13px);margin-top:3px}
 
@@ -164,7 +176,7 @@
   }
   .todo-list li:hover .del{opacity:1}
   .todo-list li .del:hover{color:#ff7a9c;transform:scale(1.15)}
-  .todo-empty{text-align:center;color:rgba(234,240,255,.34);font-size:13px;padding:22px 0;line-height:1.8}
+  .todo-empty{text-align:center;color:rgba(234,240,255,.34);font-size:13px;padding:10px 0;line-height:1.75}
   .todo-empty span{display:block;font-size:26px;margin-bottom:6px;opacity:.7}
 
   /* ===== 随手记（唯一可自由调节大小的卡片） ===== */
@@ -201,6 +213,23 @@
   /* ===== 站点导航 ===== */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:clamp(12px,1.3vw,18px);align-items:start;align-content:start}
   .card.sized .grid{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px}
+
+  /* ===== 底部动态波纹 ===== */
+  .wave-row{
+    grid-column:1 / -1;                 /* 通栏：左端 = 手机左缘，右端 = 内容右缘 */
+    margin-top:clamp(22px,3.2vh,40px);   /* 波纹整体下移，与站点导航/手机底边拉开一段呼吸距离 */
+    animation:cardIn .8s .5s cubic-bezier(.2,.86,.3,1.06) backwards;
+  }
+  .wave{
+    display:block;width:100%;height:clamp(56px,8.5vh,104px);overflow:hidden;pointer-events:none;
+    /* 左右两端淡出：线条没有“线头/断口”的边缘感 */
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.4) 3.5%,#000 9%,#000 91%,rgba(0,0,0,.4) 96.5%,transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.4) 3.5%,#000 9%,#000 91%,rgba(0,0,0,.4) 96.5%,transparent 100%);
+  }
+  .wave .wline{fill:none;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes waveMove{from{transform:translateX(0)}to{transform:translateX(-1200px)}}
+  .wave .wscroll{transform-box:view-box;animation:waveMove linear infinite;will-change:transform}
+  @media (prefers-reduced-motion: reduce){.wave .wscroll{animation:none}}
   .folder{
     background:rgba(255,255,255,.06);border:var(--stroke);border-radius:16px;
     backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
@@ -238,7 +267,7 @@
 
   /* ================= 手机 ================= */
   .phone-wrap{
-    width:min(100%, 46vh);margin-inline:auto;
+    width:100%;margin-right:auto;              /* 靠左对齐，保证底部波纹左端与手机左缘齐平；具体宽度由 JS 按右侧内容高度计算 */
     container-type:inline-size;animation:rise .6s backwards;
   }
   .phone{
@@ -378,6 +407,10 @@
         <p id="greet">你好，今天也要加油呀</p>
       </div>
     </div>
+    <!-- 空气小组件：会飘上来、能被戳破的泡泡 -->
+    <div class="air-widget" id="airWidget" title="戳一戳泡泡">
+      <canvas id="airCanvas"></canvas>
+    </div>
     <div class="hero-r">
       <div class="time" id="time">--:--</div>
       <div class="date" id="date">--</div>
@@ -480,8 +513,12 @@
       <div class="grid" id="siteGrid"></div>
     </section>
 
-  
   </main>
+
+  <!-- ================= 底部动态波纹（左端与手机左缘对齐，右端与内容右缘对齐） ================= -->
+  <div class="wave-row">
+    <svg class="wave" id="waveSvg" viewBox="0 0 1200 92" preserveAspectRatio="none" aria-hidden="true" focusable="false"></svg>
+  </div>
 </div>
 
 <script>
@@ -592,6 +629,16 @@ function renderSites(){
       </div>
     </div>`).join('');
   document.getElementById('sitesBadge').textContent = DATA.length + ' 个分类 · ' + DATA.reduce((s,f)=>s+f.links.length,0) + ' 个站点';
+  /* 展开后最多只露 3 个站点，其余的往下滚动 */
+  const VISIBLE_ROWS = 3;
+  function openCap(body){
+    const full = body.scrollHeight;
+    const subs = body.querySelectorAll('.sub');
+    if(subs.length <= VISIBLE_ROWS) return full;                  /* 不足 3 个就不用滚 */
+    const last = subs[VISIBLE_ROWS - 1];
+    const h = last.offsetTop + last.offsetHeight - body.offsetTop + 6;   /* 3 行 + 一点余量，暗示下面还有 */
+    return Math.round(Math.max(80, Math.min(full, h)));
+  }
   grid.querySelectorAll('.folder').forEach(el=>{
     const body = el.querySelector('.body');
     el.addEventListener('click', e=>{
@@ -605,8 +652,7 @@ function renderSites(){
         body.style.maxHeight = '0px';
       }else{
         el.classList.add('open');
-        const cap = Math.max(180, Math.round(window.innerHeight * 0.24));
-        body.style.maxHeight = Math.min(body.scrollHeight, cap) + 'px';
+        body.style.maxHeight = openCap(body) + 'px';
       }
     });
   });
@@ -794,12 +840,12 @@ document.addEventListener('click', e=>{
 /* ================= 手机主屏：快捷入口 ================= */
 const QUICK = [
   {t:"百度",       u:"http://baidu.com/",            e:"🔍", c1:"#4f7cff", c2:"#8fb5ff"},
-  {t:"DeepSeek",  u:"https://chat.deepseek.com/",   e:"🐋", c1:"#0ea5e9", c2:"#38bdf8"},
+  {t:"UU远程",    u:"https://uuyc.163.com/",        e:"🖥️", c1:"#6366f1", c2:"#22d3ee"},
   {t:"WorkBuddy", u:"https://www.workbuddy.cn/app",    e:"🤖", c1:"#ff9f43", c2:"#ff6b6b"},
   {t:"腾讯微云",   u:"https://www.weiyun.com/disk",  e:"☁️", c1:"#4facfe", c2:"#00c6fb"},
   {t:"GitHub",    u:"https://github.com/",          e:"🐙", c1:"#3a4149", c2:"#6a7480"},
-  {t:"Canva 可画", u:"https://www.canva.cn/",        e:"🎨", c1:"#8b5cf6", c2:"#b79cff"},
   {t:"豆包",       u:"http://dy.pbgia.com/bmdb",     e:"🥟", c1:"#5b8cff", c2:"#a78bfa"},
+  {t:"微信传输助手", u:"https://filehelper.weixin.qq.com/", e:"📤", c1:"#07c160", c2:"#4ade80"},
 ];
 document.getElementById('phoneApps').innerHTML = QUICK.map((q,i)=>`
   <a class="p-app" href="${q.u}" target="_blank" rel="noopener" style="animation-delay:${320 + i*60}ms">
@@ -857,14 +903,55 @@ function endSwipe(e){
 pager.addEventListener('pointerup', endSwipe);
 pager.addEventListener('pointercancel', ()=>{ swX = null; swOn = false; setPage(curPage); });
 
-/* 手机比窗口还高时不吸附，保证整台手机完整可见 */
+/* 手机尺寸自动跟随右侧内容：手机最下端一路拉长到「底部波纹的最高点」，中间不留空档 */
 const phoneWrap = document.getElementById('phoneWrap');
-const phoneCol = document.getElementById('phoneCol');
+const phoneCol  = document.getElementById('phoneCol');
+const mainCol   = document.querySelector('.main');
+/* 实测手机「总高 ÷ 宽度」的比例（3.7cqw 内边距 ×2 + 178cqw 屏幕），用固定值兜底 */
+let PHONE_RATIO = 1.854;
+(function(){
+  const prev = phoneWrap.style.width;
+  phoneWrap.style.width = '300px';
+  const h = phoneWrap.offsetHeight;          /* offsetHeight 不受入场动画的 scale 影响 */
+  phoneWrap.style.width = prev;
+  if(h > 20) PHONE_RATIO = h / 300;
+})();
 function fitPhone(){
+  if(!phoneWrap || !phoneCol) return;
+  if(window.matchMedia('(max-width:1060px)').matches){    /* 窄屏：手机独立成行，交给 CSS */
+    phoneCol.style.height = ''; phoneWrap.style.width = '';
+    phoneCol.classList.remove('no-stick');
+    return;
+  }
+  if(!mainCol) return;
+  const mcH = mainCol.getBoundingClientRect().height;
+  if(!(mcH > 40)) return;
+  /* 先把左列高度钉成右列高度：手机再高也不会把行/波纹顶走，避免“手机变高→行变高→手机再变高”的死循环 */
+  const rowH = Math.max(mcH, 360);
+  phoneCol.style.height = Math.round(rowH) + 'px';
+  const avail = phoneCol.getBoundingClientRect().width;      /* 左列可用宽度（上限） */
+  /* 闭环反算宽度：cqw 比例与理论值有微小出入，所以直接量手机的实际高度去修正宽度，
+     直到「手机总高 = 右列总高」——即手机最下端与站点导航最下端严格齐平 */
+  let w = Math.max(210, Math.min(avail, rowH / PHONE_RATIO));
+  phoneWrap.style.width = Math.round(w) + 'px';
+  for(let i = 0; i < 3; i++){
+    const h = phoneWrap.offsetHeight, cw = phoneWrap.offsetWidth;
+    if(!h || !cw) break;
+    const next = Math.max(210, Math.min(avail, rowH * cw / h));
+    if(Math.abs(next - cw) < 0.5) break;
+    phoneWrap.style.width = Math.round(next) + 'px';
+  }
+  /* 手机比窗口还高时不吸附，保证整台手机完整可见 */
   phoneCol.classList.toggle('no-stick', phoneWrap.offsetHeight > window.innerHeight - 50);
 }
 window.addEventListener('resize', fitPhone);
-setTimeout(fitPhone, 600);
+window.addEventListener('load', fitPhone);
+fitPhone();
+setTimeout(fitPhone, 400);
+setTimeout(fitPhone, 1000);   /* 字体/图片加载完后再校一次，避免首屏量到旧高度 */
+setTimeout(fitPhone, 1800);
+/* 说明：不再监听 `.main` 的尺寸变化——拖动今日待办/随手记改大小时，左列手机保持不动，
+   只有窗口尺寸变化时才重新适配（此时仍保证手机底边与站点导航底边齐平）。 */
 
 /* ================= 手机第二页：日历 ================= */
 const calGrid = document.getElementById('calGrid');
@@ -908,6 +995,209 @@ document.getElementById('calToday').addEventListener('click', ()=>{
   renderCal();
 });
 renderCal();
+
+/* ================= 顶部「空气」小组件：飘浮泡泡 ================= */
+(function(){
+  const wrap = document.getElementById('airWidget');
+  const cv   = document.getElementById('airCanvas');
+  if(!wrap || !cv) return;
+  const ctx = cv.getContext('2d');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  /* 颜色取背景极光里的青 / 紫 / 粉 / 薄荷 / 琥珀 / 藕蓝 */
+  const PAL = [
+    [56,189,248],[139,92,246],[236,72,153],[52,211,153],[245,158,11],[124,156,255]
+  ];
+  const WORDS = ['啵！','呼～','咕噜','噗','哈～','空气真好','✨','咻'];
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W = 0, H = 0, t = 0, last = 0;
+  let bubbles = [], bits = [], rings = [], texts = [];
+  const mouse = { x:-999, y:-999, on:false };
+
+  const rnd = (a,b)=> a + Math.random()*(b-a);
+
+  function makeBubble(fromBottom){
+    const base = Math.max(2.6, Math.min(10, W/26));
+    const r = base * rnd(.55, 1.15);
+    return {
+      x: rnd(r + 3, Math.max(r + 4, W - r - 3)),
+      y: fromBottom ? H + rnd(3, 70) : rnd(0, Math.max(6, H)),
+      r: r,
+      vy: rnd(10, 24),                 /* 上升速度 px/s */
+      sway: rnd(6, 17),                /* 左右摆动幅度 */
+      ph: rnd(0, Math.PI*2),
+      c: PAL[(Math.random()*PAL.length)|0],
+      hot: 0                           /* 被鼠标推开时的高亮余温 */
+    };
+  }
+  function resize(){
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    if(!W || !H) return;
+    cv.width  = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const n = Math.max(3, Math.min(9, Math.round(W / 48)));
+    bubbles = [];
+    for(let i = 0; i < n; i++) bubbles.push(makeBubble(false));
+  }
+
+  function pop(b){
+    const c = b.c;
+    for(let i = 0; i < 10; i++){
+      const a = Math.random()*Math.PI*2, s = rnd(24, 84);
+      bits.push({
+        x:b.x, y:b.y, vx:Math.cos(a)*s, vy:Math.sin(a)*s - 14,
+        r:rnd(.9, 2.3), life:rnd(.35, .75), max:.75, c:c
+      });
+    }
+    rings.push({ x:b.x, y:b.y, r:b.r, life:1, c:c });
+    texts.push({ x:b.x, y:b.y - b.r - 5, life:.9, txt: WORDS[(Math.random()*WORDS.length)|0] });
+    Object.assign(b, makeBubble(true));   /* 戳破后从底下重新飘一颗上来 */
+  }
+
+  function step(dt){
+    bubbles.forEach(b=>{
+      b.y -= b.vy * dt;
+      b.x += Math.sin(t*0.9 + b.ph) * b.sway * dt;
+      if(mouse.on){
+        const dx = b.x - mouse.x, dy = b.y - mouse.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const R = 60;
+        if(d < R){                          /* 鼠标像一阵风，把泡泡吹开 */
+          const p = (R - d) / R;
+          b.x += (dx/d) * p * 52 * dt;
+          b.y += (dy/d) * p * 52 * dt;
+          b.hot = Math.min(1, b.hot + dt*4);
+        } else b.hot = Math.max(0, b.hot - dt*2.2);
+      } else b.hot = Math.max(0, b.hot - dt*2.2);
+
+      if(b.x < b.r) b.x = b.r;
+      else if(b.x > W - b.r) b.x = W - b.r;
+      if(b.y < -b.r*1.5) Object.assign(b, makeBubble(true));
+    });
+
+    bits.forEach(p=>{ p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 46*dt; p.life -= dt; });
+    bits = bits.filter(p=> p.life > 0);
+    rings.forEach(r=>{ r.r += 82*dt; r.life -= dt*1.7; });
+    rings = rings.filter(r=> r.life > 0);
+    texts.forEach(x=>{ x.y -= 17*dt; x.life -= dt; });
+    texts = texts.filter(x=> x.life > 0);
+  }
+
+  function drawBubble(b){
+    const c = b.c, R = b.r;
+    const g = ctx.createRadialGradient(b.x - R*.34, b.y - R*.4, R*.08, b.x, b.y, R);
+    g.addColorStop(0,   'rgba(255,255,255,' + (0.30 + b.hot*0.35).toFixed(3) + ')');
+    g.addColorStop(.45, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.26 + b.hot*0.34).toFixed(3) + ')');
+    g.addColorStop(1,   'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+    ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, Math.PI*2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.48 + b.hot*0.42).toFixed(3) + ')';
+    ctx.stroke();
+    ctx.beginPath();                                     /* 左上高光点 */
+    ctx.arc(b.x - R*.34, b.y - R*.38, Math.max(1, R*.2), 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.55 + b.hot*0.4).toFixed(3) + ')';
+    ctx.fill();
+  }
+
+  function render(){
+    ctx.clearRect(0, 0, W, H);
+    /* 涟漪 */
+    rings.forEach(r=>{
+      ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI*2);
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = 'rgba(' + r.c[0] + ',' + r.c[1] + ',' + r.c[2] + ',' + (r.life*0.5).toFixed(3) + ')';
+      ctx.stroke();
+    });
+    /* 碎屑 */
+    bits.forEach(p=>{
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(' + p.c[0] + ',' + p.c[1] + ',' + p.c[2] + ',' + (p.life/p.max*0.95).toFixed(3) + ')';
+      ctx.fill();
+    });
+    bubbles.forEach(drawBubble);
+    /* 拟声词 */
+    ctx.textAlign = 'center';
+    ctx.font = '600 11px "PingFang SC","Microsoft YaHei",sans-serif';
+    texts.forEach(x=>{
+      ctx.fillStyle = 'rgba(234,240,255,' + Math.max(0, Math.min(1, x.life)).toFixed(3) + ')';
+      ctx.fillText(x.txt, x.x, x.y);
+    });
+  }
+
+  function frame(ts){
+    if(!last) last = ts;
+    const dt = Math.min(0.05, (ts - last)/1000);
+    last = ts; t += dt;
+    step(dt); render();
+    requestAnimationFrame(frame);
+  }
+
+  wrap.addEventListener('pointermove', e=>{
+    const r = wrap.getBoundingClientRect();
+    mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.on = true;
+  });
+  wrap.addEventListener('pointerleave', ()=>{ mouse.on = false; mouse.x = mouse.y = -999; });
+  wrap.addEventListener('pointerdown', e=>{
+    const r = wrap.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    let hit = null, best = 1e9;
+    bubbles.forEach(b=>{
+      const d = Math.hypot(b.x - px, b.y - py);
+      if(d < b.r + 9 && d < best){ best = d; hit = b; }
+    });
+    if(hit) pop(hit);
+    else {                                   /* 戳空 = 吹一口气 */
+      rings.push({ x:px, y:py, r:3, life:.8, c:[200,214,255] });
+      texts.push({ x:px, y:py - 6, life:.75, txt:'呼～' });
+    }
+  });
+
+  resize();
+  if(reduce) render(); else requestAnimationFrame(frame);
+  window.addEventListener('resize', ()=>{ resize(); if(reduce) render(); });
+})();
+
+/* ================= 底部动态波纹 ================= */
+(function(){
+  const svg = document.getElementById('waveSvg');
+  if(!svg) return;
+  const W = 1200, H = 92, CY = H / 2;
+  /* 线宽整体收细（主亮线 3.4 → 1.4）；配色改为「青 / 紫 / 粉」低饱和微光，与背景极光同源 */
+  const layers = [
+    { k1:4, k2:9, amp:11, base:CY-4,  w:13,  sig:6, color:'rgba(56,189,248,.16)',  dur:26, rev:true  },
+    { k1:3, k2:7, amp:9,  base:CY+8,  w:5,   sig:4, color:'rgba(139,92,246,.20)',  dur:20, rev:false },
+    { k1:5, k2:3, amp:10, base:CY+2,  w:1.4, sig:0, color:'rgba(165,214,255,.72)', dur:16, rev:true  },
+    { k1:2, k2:6, amp:14, base:CY-12, w:1,   sig:0, color:'rgba(167,139,250,.42)', dur:24, rev:false },
+    { k1:6, k2:2, amp:7,  base:CY+20, w:0.9, sig:0, color:'rgba(244,114,182,.30)', dur:30, rev:true  },
+  ];
+  let out = '<defs>';
+  layers.forEach((L, i)=>{
+    if(L.sig) out += '<filter id="wb' + i + '" x="-10%" y="-200%" width="120%" height="500%">' +
+                     '<feGaussianBlur stdDeviation="' + L.sig + '"/></filter>';
+  });
+  out += '</defs>';
+  layers.forEach((L, i)=>{
+    const p1 = i * 1.37, p2 = i * 2.21;
+    let d = '';
+    /* 画满三屏（-W ~ 2W）：动画只平移一屏，可见窗口永远落在中间那一屏里 → 两端永远看不到线头 */
+    for(let x = -W; x <= W * 2 + 200; x += 10){
+      const y = L.base
+        + L.amp * Math.sin((x / W) * L.k1 * Math.PI * 2 + p1)
+        + L.amp * 0.38 * Math.sin((x / W) * L.k2 * Math.PI * 2 + p2);
+      d += (x === -W ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(2) + ' ';
+    }
+    out += '<g class="wscroll" style="animation-duration:' + L.dur + 's;' +
+             (L.rev ? 'animation-direction:reverse;' : '') + '">' +
+             '<path class="wline" d="' + d.trim() + '" stroke="' + L.color + '" stroke-width="' + L.w + '"' +
+             (L.sig ? ' filter="url(#wb' + i + ')"' : '') + '/>' +
+           '</g>';
+  });
+  svg.innerHTML = out;
+})();
+/* 波纹画完后重量一次手机尺寸（首屏脚本执行时可能还没排版完） */
+fitPhone();
 </script>
 </body>
 </html>
