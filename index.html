@@ -291,11 +291,11 @@
     font-size:3.5cqw;font-weight:800;color:#eaf0ff;padding:0 2.6cqw;margin-top:-8.4cqw;height:7.9cqw;
   }
   .status .sicons{letter-spacing:.5cqw;font-size:2.9cqw}
-  /* 两页切换 */
+  /* 三页切换 */
   .p-pager{position:relative;z-index:2;flex:1;min-height:0;overflow:hidden;touch-action:pan-y}
-  .p-track{display:flex;width:200%;height:100%;will-change:transform;transform:translateX(0)}
+  .p-track{display:flex;width:300%;height:100%;will-change:transform;transform:translateX(0)}
   .p-page{
-    width:50%;height:100%;flex-shrink:0;display:flex;flex-direction:column;gap:3cqw;
+    width:33.3333%;height:100%;flex-shrink:0;display:flex;flex-direction:column;gap:3cqw;
     overflow-y:auto;overflow-x:hidden;scrollbar-width:none;
   }
   .p-page::-webkit-scrollbar{display:none}
@@ -325,10 +325,52 @@
     box-shadow:0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);
     padding:3.7cqw 4.2cqw;
   }
-  .p-clock{display:flex;align-items:center;justify-content:space-between}
-  .p-clock .pt{font-size:11.5cqw;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05}
+  .p-clock{display:flex;align-items:center;justify-content:space-between;gap:2.4cqw}
+  .p-clock-l{min-width:0;flex:1 1 auto}
+  .pt-row{display:flex;align-items:center;gap:2.2cqw;min-width:0}
+  .p-clock .pt{font-size:11cqw;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;flex-shrink:0}
   .p-clock .pd{font-size:3cqw;color:rgba(234,240,255,.6);margin-top:.8cqw}
-  .p-clock .pav{width:14.1cqw;height:14.1cqw;border-radius:4.5cqw;object-fit:cover;border:2px solid rgba(255,255,255,.6);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+  .p-clock .pav{width:14.1cqw;height:14.1cqw;border-radius:4.5cqw;object-fit:cover;border:2px solid rgba(255,255,255,.6);box-shadow:0 4px 12px rgba(0,0,0,.35);flex-shrink:0}
+
+  /* ===== 时间右边的「会呼吸的小按钮」：流光 + 呼吸光晕 + 悬停弹跳 ===== */
+  .p-jump{
+    position:relative;display:inline-flex;align-items:center;gap:1cqw;flex-shrink:0;
+    text-decoration:none;color:#f2f6ff;font-size:3.3cqw;font-weight:800;letter-spacing:.1cqw;
+    padding:1.5cqw 2.7cqw 1.5cqw 2.2cqw;border-radius:99px;white-space:nowrap;overflow:hidden;
+    background:linear-gradient(135deg,rgba(124,156,255,.38),rgba(181,123,255,.32));
+    border:1px solid rgba(170,196,255,.6);
+    box-shadow:0 1cqw 3cqw rgba(80,110,255,.26);
+    animation:jumpBreath 3.6s ease-in-out infinite;
+    transition:transform .22s cubic-bezier(.2,.8,.3,1.45), background .22s;
+  }
+  @keyframes jumpBreath{
+    0%,100%{box-shadow:0 0 0 0 rgba(124,156,255,.42), 0 1cqw 3cqw rgba(80,110,255,.22)}
+    50%    {box-shadow:0 0 0 1.2cqw rgba(124,156,255,0), 0 1.6cqw 4.2cqw rgba(80,110,255,.42)}
+  }
+  /* 一道光每隔几秒扫过去 */
+  .p-jump::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg,transparent 34%,rgba(255,255,255,.62) 48%,rgba(255,255,255,.2) 56%,transparent 70%);
+    transform:translateX(-130%);
+    animation:jumpShine 4.8s ease-in-out infinite;
+  }
+  @keyframes jumpShine{
+    0%,40%   {transform:translateX(-130%)}
+    62%,100% {transform:translateX(130%)}
+  }
+  .p-jump .pj-dot{
+    width:1.9cqw;height:1.9cqw;border-radius:50%;background:#7dffc4;flex-shrink:0;
+    box-shadow:0 0 1.8cqw rgba(125,255,196,.95);
+    animation:jumpDot 1.8s ease-in-out infinite;
+  }
+  @keyframes jumpDot{0%,100%{opacity:.5;transform:scale(.75)}50%{opacity:1;transform:scale(1.2)}}
+  .p-jump .pj-ic{transition:transform .22s;font-size:2.9cqw}
+  .p-jump:hover{transform:translateY(-.7cqw) scale(1.05);background:linear-gradient(135deg,rgba(140,172,255,.55),rgba(196,140,255,.48))}
+  .p-jump:hover .pj-ic{transform:translate(.7cqw,-.7cqw)}
+  .p-jump:active{transform:scale(.93)}
+  @media (prefers-reduced-motion: reduce){
+    .p-jump,.p-jump::before,.p-jump .pj-dot{animation:none}
+  }
   .p-sec{position:relative;z-index:2;font-size:3.1cqw;font-weight:800;color:rgba(234,240,255,.6);letter-spacing:.4cqw;padding:0 .5cqw}
   .p-apps{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:2.4cqw}
   .p-apps .p-app:last-child:nth-child(odd){grid-column:1 / -1}
@@ -343,7 +385,57 @@
   .p-app:hover{transform:translateY(-3px) scale(1.03);background:rgba(255,255,255,.16);box-shadow:0 9px 20px rgba(0,0,0,.35)}
   .p-app .pe{width:9.4cqw;height:9.4cqw;border-radius:3cqw;display:flex;align-items:center;justify-content:center;font-size:4.4cqw;color:#fff;flex-shrink:0;box-shadow:0 3px 8px rgba(0,0,0,.25)}
   .p-app .pn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* 第二页：日历 */
+  /* ===== 第二页：内嵌网页 ===== */
+  .p-page-web{overflow:hidden}
+  .web-top{display:flex;align-items:center;justify-content:space-between;gap:2cqw;flex-shrink:0;padding:.4cqw .4cqw 0}
+  .web-top .wt{display:flex;align-items:center;gap:1.8cqw;min-width:0}
+  .web-top .wdot{
+    width:2.2cqw;height:2.2cqw;border-radius:50%;background:#3ddc97;flex-shrink:0;
+    box-shadow:0 0 2.4cqw rgba(61,220,151,.85);animation:wpulse 2.4s ease-in-out infinite;
+  }
+  @keyframes wpulse{0%,100%{opacity:.45;transform:scale(.82)}50%{opacity:1;transform:scale(1)}}
+  .web-top .wname{font-size:3.1cqw;font-weight:800;letter-spacing:.2cqw;color:rgba(234,240,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .web-top .wnav{display:flex;gap:1.6cqw;flex-shrink:0}
+  .web-top .wnav button{
+    width:7.4cqw;height:7.4cqw;border-radius:50%;padding:0;line-height:1;cursor:pointer;
+    background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);color:#eaf0ff;
+    font-size:3.2cqw;display:flex;align-items:center;justify-content:center;
+    transition:transform .2s, background .2s;
+  }
+  .web-top .wnav button:hover{background:rgba(255,255,255,.22);transform:scale(1.08)}
+  .web-top .wnav button:active{transform:scale(.92)}
+  .web-shell{
+    position:relative;flex:1 1 auto;min-height:0;overflow:hidden;
+    border-radius:4.6cqw;border:1px solid rgba(255,255,255,.14);background:#0a0e13;
+    box-shadow:0 4cqw 9cqw rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .web-shell iframe{display:block;width:100%;height:100%;border:0;background:#0a0e13}
+  .web-mask{
+    position:absolute;inset:0;z-index:3;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.6cqw;
+    padding:0 4cqw;text-align:center;font-size:3cqw;line-height:1.6;color:rgba(234,240,255,.62);
+    background:linear-gradient(165deg,#161d33,#0b1020);
+    transition:opacity .45s ease;
+  }
+  .web-mask.off{opacity:0;pointer-events:none}
+  .web-mask .spin{
+    width:7cqw;height:7cqw;border-radius:50%;
+    border:2px solid rgba(124,156,255,.22);border-top-color:#7c9cff;
+    animation:wspin 1s linear infinite;
+  }
+  @keyframes wspin{to{transform:rotate(360deg)}}
+  .web-mask .mo{
+    display:none;text-decoration:none;color:#dce7ff;font-size:2.9cqw;font-weight:800;white-space:nowrap;
+    background:rgba(124,156,255,.22);border:1px solid rgba(124,156,255,.5);
+    padding:1.6cqw 3.2cqw;border-radius:99px;
+  }
+  .web-mask.slow .spin{display:none}
+  .web-mask.slow .mo{display:inline-block}
+  .web-foot{
+    flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:2cqw;
+    padding:0 1cqw;font-size:2.7cqw;color:rgba(234,240,255,.44);
+  }
+  /* 第三页：日历 */
   .cal-top{display:flex;align-items:center;justify-content:space-between;gap:2cqw;flex-shrink:0}
   .cal-top .cm{font-size:4.4cqw;font-weight:800;letter-spacing:.2cqw}
   .cal-top .cnav{display:flex;gap:1.6cqw}
@@ -430,8 +522,15 @@
               <!-- 第 1 页：主屏 -->
               <section class="p-page">
                 <div class="p-card p-clock">
-                  <div>
-                    <div class="pt" id="pClock">--:--</div>
+                  <div class="p-clock-l">
+                    <div class="pt-row">
+                      <div class="pt" id="pClock">--:--</div>
+                      <a class="p-jump" id="jumpLink" href="https://kyriegbw.github.io/zhaoxiaolei/" target="_blank" rel="noopener" title="打开赵小雷的自我数据">
+                        <span class="pj-dot"></span>
+                        <span class="pj-tx">赵小雷</span>
+                        <span class="pj-ic">↗</span>
+                      </a>
+                    </div>
                     <div class="pd" id="pDate">--</div>
                   </div>
                   <img class="pav" src="avatar.jpg" alt="头像">
@@ -439,7 +538,32 @@
                 <div class="p-sec">快捷入口</div>
                 <div class="p-apps" id="phoneApps"></div>
               </section>
-              <!-- 第 2 页：日历 -->
+              <!-- 第 2 页：内嵌网页 -->
+              <section class="p-page p-page-web">
+                <div class="web-top">
+                  <span class="wt">
+                    <span class="wdot"></span>
+                    <span class="wname">zhaoxiaolei</span>
+                  </span>
+                  <span class="wnav">
+                    <button id="webReload" title="重新载入">⟳</button>
+                    <button id="webOpen" title="在新窗口打开">↗</button>
+                  </span>
+                </div>
+                <div class="web-shell">
+                  <iframe id="webFrame" title="自我数据 · 每日记录"></iframe>
+                  <div class="web-mask" id="webMask">
+                    <span class="spin"></span>
+                    <span id="webMaskTxt">正在载入…</span>
+                    <a class="mo" href="https://kyriegbw.github.io/zhaoxiaolei/" target="_blank" rel="noopener">在新窗口打开 ↗</a>
+                  </div>
+                </div>
+                <div class="web-foot">
+                  <span>自我数据 · 每日记录</span>
+                  <span>可上下滑动</span>
+                </div>
+              </section>
+              <!-- 第 3 页：日历 -->
               <section class="p-page">
                 <div class="cal-top">
                   <span class="cm" id="calTitle">--</span>
@@ -460,7 +584,7 @@
           </div>
           <div class="p-nav">
             <button class="p-arrow off" id="pPrev" title="上一页">‹</button>
-            <div class="p-dots" id="pDots"><i class="on"></i><i></i></div>
+            <div class="p-dots" id="pDots"><i class="on"></i><i></i><i></i></div>
             <button class="p-arrow" id="pNext" title="下一页">›</button>
           </div>
         </div>
@@ -534,13 +658,11 @@ const DATA = [
   { name:"大学学习", emoji:"🎓", color:"#7c5cff", links:[
     {t:"智慧树网",u:"https://www.zhihuishu.com/"},
     {t:"智慧职教",u:"https://zjy2.icve.com.cn/study/index"},
-    {t:"思维导图",u:"https://xmind.cn/"},
     {t:"选课网址",u:"https://cas.whcp.edu.cn/lyuapServer/login?service=https%3A%2F%2Fjw.whcp.edu.cn%3A9090%2Fapi%2Fcas%2Flogin%3Fpattern%3Dteacher-login%26returnUrl%3Dhttps%253A%252F%252Fjw.whcp.edu.cn%252F%2523%252Fjwxt%252Fjs%252Fstudent%252FchildServiceQuery%252Fchoose"},
   ]},
   { name:"工具", emoji:"🧰", color:"#f4a63b", links:[
     {t:"百度",u:"http://baidu.com/"},
     {t:"豆包",u:"http://dy.pbgia.com/bmdb"},
-    {t:"爬虫",u:"https://curlconverter.com/python/"},
     {t:"腾讯文档",u:"https://docs.qq.com/desktop/"},
     {t:"腾讯微云",u:"https://www.weiyun.com/disk"},
     {t:"百度翻译",u:"https://fanyi.baidu.com/mtpe-individual/multimodal?channel=pinzhuan#/"},
@@ -552,7 +674,6 @@ const DATA = [
   ]},
   { name:"影视", emoji:"🎬", color:"#ff5c7a", links:[
     {t:"抖音",u:"http://dy.pbgia.com/bmdy"},
-    {t:"红果短剧",u:"https://hongguoduanju.com/"},
     {t:"腾讯视频",u:"https://v.qq.com/"},
     {t:"爱奇艺",u:"https://www.iqiyi.com/"},
     {t:"西瓜视频",u:"https://www.ixigua.com/"},
@@ -856,20 +977,21 @@ document.getElementById('phoneApps').innerHTML = QUICK.map((q,i)=>`
     <span class="pn">${q.t}</span>
   </a>`).join('');
 
-/* ================= 手机：两页切换（按钮 / 滑动 / 圆点） ================= */
+/* ================= 手机：三页切换（按钮 / 滑动 / 圆点） ================= */
 const pager = document.getElementById('pPager');
 const track = document.getElementById('pTrack');
 const dots  = [...document.querySelectorAll('#pDots i')];
 const pPrevBtn = document.getElementById('pPrev');
 const pNextBtn = document.getElementById('pNext');
+const PAGES = 3, PAGE_PCT = 100 / PAGES;      // 每页占 track 的 33.3333%
 let curPage = 0;
 function setPage(i, animate){
-  curPage = Math.max(0, Math.min(1, i));
+  curPage = Math.max(0, Math.min(PAGES - 1, i));
   track.style.transition = (animate === false) ? 'none' : 'transform .42s cubic-bezier(.32,.72,.28,1)';
-  track.style.transform = 'translateX(-' + (curPage * 50) + '%)';
+  track.style.transform = 'translateX(-' + (curPage * PAGE_PCT) + '%)';
   dots.forEach((d,k)=> d.classList.toggle('on', k === curPage));
   pPrevBtn.classList.toggle('off', curPage === 0);
-  pNextBtn.classList.toggle('off', curPage === 1);
+  pNextBtn.classList.toggle('off', curPage === PAGES - 1);
 }
 dots.forEach((d,k)=> d.addEventListener('click', ()=> setPage(k)));
 pPrevBtn.addEventListener('click', ()=> setPage(curPage - 1));
@@ -879,7 +1001,7 @@ let swX = null, swY = null, swBase = 0, swW = 1, swOn = false;
 pager.addEventListener('pointerdown', e=>{
   if(e.target.closest('button')) return;            // 日历按钮不抢手势
   swX = e.clientX; swY = e.clientY; swW = pager.offsetWidth || 1;
-  swBase = curPage * 50; swOn = false;
+  swBase = curPage * PAGE_PCT; swOn = false;
 });
 pager.addEventListener('pointermove', e=>{
   if(swX === null) return;
@@ -890,8 +1012,10 @@ pager.addEventListener('pointermove', e=>{
     swOn = true; track.style.transition = 'none';
     try{ pager.setPointerCapture(e.pointerId); }catch(_){}
   }
-  const pos = Math.max(-8, Math.min(58, swBase - (dx / swW) * 50));
-  track.style.transform = 'translateX(' + (-pos) + '%)';
+  /* 左右各留 4% 的“橡皮筋”余量，首尾页拖不动太多 */
+  const pos = swBase - (dx / swW) * PAGE_PCT;
+  const lo = -4, hi = (PAGES - 1) * PAGE_PCT + 4;
+  track.style.transform = 'translateX(' + (-Math.max(lo, Math.min(hi, pos))) + '%)';
 });
 function endSwipe(e){
   if(swX === null) return;
@@ -899,12 +1023,66 @@ function endSwipe(e){
   swX = null; swOn = false;
   if(!moved){ setPage(curPage); return; }
   const ratio = dx / swW;
-  if(ratio < -0.10) setPage(1);
-  else if(ratio > 0.10) setPage(0);
+  if(ratio < -0.085) setPage(curPage + 1);
+  else if(ratio > 0.085) setPage(curPage - 1);
   else setPage(curPage);
 }
 pager.addEventListener('pointerup', endSwipe);
 pager.addEventListener('pointercancel', ()=>{ swX = null; swOn = false; setPage(curPage); });
+
+/* ================= 手机第 2 页：内嵌网页 ================= */
+const WEB_URL = 'https://kyriegbw.github.io/zhaoxiaolei/';
+const webFrame   = document.getElementById('webFrame');
+const webMask    = document.getElementById('webMask');
+const webMaskTxt = document.getElementById('webMaskTxt');
+let webReloading = false, webSlowTimer = null, webFadeTimer = null;
+
+function fadeWebMask(){
+  if(!webMask) return;
+  clearTimeout(webSlowTimer);
+  webMask.classList.add('off');
+}
+function startWebTimers(){
+  clearTimeout(webSlowTimer); clearTimeout(webFadeTimer);
+  /* 6 秒还没好：撤掉转圈，给出「新窗口打开」的出口 */
+  webSlowTimer = setTimeout(()=>{
+    if(webMask.classList.contains('off')) return;
+    webMask.classList.add('slow');
+    if(webMaskTxt) webMaskTxt.textContent = '载入有点慢，可以直接在新窗口打开';
+  }, 6000);
+  /* 14 秒无条件撤掉遮罩：宁可露出空白，也不让界面永远卡在「正在载入」 */
+  webFadeTimer = setTimeout(fadeWebMask, 14000);
+}
+function loadWeb(){
+  if(!webFrame) return;
+  webMask.classList.remove('off','slow');
+  if(webMaskTxt) webMaskTxt.textContent = '正在载入…';
+  webFrame.src = WEB_URL;              /* src 由脚本设置，保证一定能收到 load 事件 */
+  startWebTimers();
+}
+if(webFrame){
+  webFrame.addEventListener('load', ()=>{
+    if(webReloading) return;           /* 重载时 about:blank 的 load 不算 */
+    if(!webFrame.getAttribute('src')) return;
+    fadeWebMask();
+  });
+  loadWeb();                           /* 进页面就开始下载，翻到第 2 页时已经就绪 */
+}
+const webReloadBtn = document.getElementById('webReload');
+if(webReloadBtn){
+  webReloadBtn.addEventListener('click', ()=>{
+    webMask.classList.remove('off','slow');
+    if(webMaskTxt) webMaskTxt.textContent = '正在重新载入…';
+    webReloading = true;
+    webFrame.src = 'about:blank';
+    setTimeout(()=>{ webReloading = false; webFrame.src = WEB_URL; }, 80);
+    startWebTimers();
+  });
+}
+const webOpenBtn = document.getElementById('webOpen');
+if(webOpenBtn){
+  webOpenBtn.addEventListener('click', ()=>{ window.open(WEB_URL, '_blank', 'noopener,noreferrer'); });
+}
 
 /* 手机尺寸自动跟随右侧内容：手机最下端一路拉长到「底部波纹的最高点」，中间不留空档 */
 const phoneWrap = document.getElementById('phoneWrap');
@@ -956,7 +1134,7 @@ setTimeout(fitPhone, 1800);
 /* 说明：不再监听 `.main` 的尺寸变化——拖动今日待办/随手记改大小时，左列手机保持不动，
    只有窗口尺寸变化时才重新适配（此时仍保证手机底边与站点导航底边齐平）。 */
 
-/* ================= 手机第二页：日历 ================= */
+/* ================= 手机第 3 页：日历 ================= */
 const calGrid = document.getElementById('calGrid');
 const now = new Date();
 let calY = now.getFullYear(), calM = now.getMonth();
